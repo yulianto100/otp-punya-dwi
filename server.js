@@ -9,7 +9,6 @@ const { WebSocketServer } = require('ws');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const path = require('path');
-const QRCode = require('qrcode');
 
 const { login, authMiddleware } = require('./lib/auth');
 const db = require('./lib/db');
@@ -221,23 +220,35 @@ app.get('*', (req, res) => {
 
 // ==================== Start Server ====================
 
-server.listen(PORT, () => {
-  console.log('');
-  console.log('  ╔══════════════════════════════════════╗');
-  console.log('  ║     🟢 WA OTP Manager Started!      ║');
-  console.log('  ╠══════════════════════════════════════╣');
-  console.log(`  ║  Dashboard: http://localhost:${PORT}    ║`);
-  console.log('  ║  Login:     admin / admin123         ║');
-  console.log('  ╚══════════════════════════════════════╝');
-  console.log('');
+async function startServer() {
+  // Initialize database first
+  await db.initDB();
+  db.setupQueries();
 
-  // Restore previous sessions
-  waClient.restoreSessions();
+  server.listen(PORT, () => {
+    console.log('');
+    console.log('  ╔══════════════════════════════════════╗');
+    console.log('  ║     🟢 WA OTP Manager Started!      ║');
+    console.log('  ╠══════════════════════════════════════╣');
+    console.log(`  ║  Dashboard: http://localhost:${PORT}    ║`);
+    console.log('  ║  Login:     admin / admin123         ║');
+    console.log('  ╚══════════════════════════════════════╝');
+    console.log('');
+
+    // Restore previous sessions
+    waClient.restoreSessions();
+  });
+}
+
+startServer().catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });
 
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('\n[Server] Shutting down...');
+  db.saveDB();
   server.close();
   process.exit(0);
 });
