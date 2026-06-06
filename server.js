@@ -211,10 +211,12 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Catch all - serve index
-app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api/')) {
+// Catch all - serve index (Express 5 requires named parameter)
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api/')) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  } else {
+    next();
   }
 });
 
