@@ -16,7 +16,7 @@
     messages: [],
     maxSessions: 5,
     autoScroll: true,
-    currentQrSession: null,
+    currentPairingSession: null,
   };
 
   // ==================== Auth Check ====================
@@ -40,10 +40,9 @@
     emptyMessages: $('#emptyMessages'),
     filterSession: $('#filterSession'),
     addSessionModal: $('#addSessionModal'),
-    qrModal: $('#qrModal'),
-    qrImage: $('#qrImage'),
-    qrLoading: $('#qrLoading'),
-    qrSessionName: $('#qrSessionName'),
+    pairingModal: $('#pairingModal'),
+    pairingCode: $('#pairingCode'),
+    pairingSessionName: $('#pairingSessionName'),
     sessionNameInput: $('#sessionName'),
   };
 
@@ -117,8 +116,8 @@
         removeSession(msg.data.name);
         break;
 
-      case 'qr':
-        showQR(msg.data);
+      case 'pairing_code':
+        showPairingCode(msg.data);
         break;
 
       case 'otp':
@@ -183,10 +182,16 @@
           </span>
         </div>
         ${session.phone ? `<span class="session-phone">+${session.phone}</span>` : ''}
+        ${session.pairingCode ? `
+          <div class="pairing-code-display">
+            <span class="pairing-code-text">${session.pairingCode}</span>
+            <button class="btn btn-sm btn-ghost" onclick="app.copyPairingCode('${session.pairingCode}')">📋</button>
+          </div>
+        ` : ''}
         <div class="session-actions">
-          ${session.status === 'waiting_qr' || session.status === 'connecting' ? `
-            <button class="btn btn-sm btn-ghost" onclick="app.showQRModal('${session.name}')">
-              📱 QR Code
+          ${session.status === 'pairing_code' || session.status === 'connecting' ? `
+            <button class="btn btn-sm btn-primary" onclick="app.showPairingModal('${session.name}')">
+              📱 Pairing Code
             </button>
           ` : ''}
           <button class="btn btn-sm btn-danger" onclick="app.logoutSession('${session.name}')">
@@ -201,7 +206,7 @@
     const labels = {
       'connected': 'Terhubung',
       'connecting': 'Menghubungkan...',
-      'waiting_qr': 'Scan QR',
+      'pairing_code': 'Menunggu Pairing',
       'reconnecting': 'Menyambung ulang...',
       'disconnected': 'Terputus',
       'error': 'Error',
@@ -301,35 +306,49 @@
     }
   }
 
-  // ==================== QR Code ====================
-  function showQR(data) {
-    if (state.currentQrSession === data.name) {
-      els.qrImage.src = data.qr;
-      els.qrImage.style.display = 'block';
-      els.qrLoading.classList.add('hidden');
+  // ==================== Pairing Code ====================
+  function showPairingCode(data) {
+    // Update session card
+    const idx = state.sessions.findIndex(s => s.name === data.name);
+    if (idx >= 0) {
+      state.sessions[idx].pairingCode = data.code;
+      state.sessions[idx].status = 'pairing_code';
+      renderSessions();
+    }
+
+    // Show modal if it's for current session
+    if (state.currentPairingSession === data.name) {
+      els.pairingCode.textContent = formatPairingCode(data.code);
+      els.pairingSessionName.textContent = `Session: ${data.name}`;
     }
   }
 
-  function showQRModal(sessionName) {
-    state.currentQrSession = sessionName;
-    els.qrSessionName.textContent = `Session: ${sessionName}`;
-    els.qrImage.style.display = 'none';
-    els.qrLoading.classList.remove('hidden');
-    els.qrModal.classList.add('show');
-
-    // Try to fetch existing QR
-    api(`/sessions/${sessionName}/qr`).then(data => {
-      if (data && data.qr) {
-        els.qrImage.src = data.qr;
-        els.qrImage.style.display = 'block';
-        els.qrLoading.classList.add('hidden');
-      }
-    }).catch(() => {});
+  function formatPairingCode(code) {
+    // Format as XXXX-XXXX for readability
+    if (code.length === 8) {
+      return `${code.substring(0, 4)}-${code.substring(4)}`;
+    }
+    return code;
   }
 
-  function closeQRModal() {
-    els.qrModal.classList.remove('show');
-    state.currentQrSession = null;
+  function showPairingModal(sessionName) {
+    state.currentPairingSession = sessionName;
+    els.pairingSessionName.textContent = `Session: ${sessionName}`;
+
+    // Find existing pairing code
+    const session = state.sessions.find(s => s.name === sessionName);
+    if (session && session.pairingCode) {
+      els.pairingCode.textContent = formatPairingCode(session.pairingCode);
+    } else {
+      els.pairingCode.textContent = 'Memuat...';
+    }
+
+    els.pairingModal.classList.add('show');
+  }
+
+  function closePairingModal() {
+    els.pairingModal.classList.remove('show');
+    state.currentPairingSession = null;
   }
 
   // ==================== Actions ====================
@@ -350,8 +369,8 @@
       els.sessionNameInput.value = '';
       showNotification(`Session "${name}" dibuat`, 'success');
 
-      // Auto show QR
-      setTimeout(() => showQRModal(name), 500);
+      // Auto show pairing modal
+      setTimeout(() => showPairingModal(name), 1000);
     } catch (err) {
       showNotification(err.message, 'error');
     }
@@ -396,6 +415,19 @@
     });
   }
 
+  function copyPairingCode(code) {
+    const cleanCode = code.replace('-', '');
+    navigator.clipboard.writeText(cleanCode).then(() => {
+      showNotification('Pairing code copied!', 'success');
+    }).catch(() => {
+      showNotification('Gagal copy', 'error');
+    });
+  }
+
+  function exportOTP() {
+    window.open('/api/otp-logs/export', '_blank');
+  }
+
   // ==================== Utilities ====================
   function escapeHtml(text) {
     if (!text) return '';
@@ -417,7 +449,6 @@
   }
 
   function showNotification(message, type = 'info') {
-    // Simple toast notification
     const toast = document.createElement('div');
     toast.style.cssText = `
       position: fixed;
@@ -486,8 +517,14 @@
       els.addSessionModal.classList.remove('show');
     });
 
-    // QR modal
-    $('#btnCloseQr').addEventListener('click', closeQRModal);
+    // Pairing modal
+    $('#btnClosePairing').addEventListener('click', closePairingModal);
+    $('#btnCopyPairingCode').addEventListener('click', () => {
+      const code = els.pairingCode.textContent.replace('-', '');
+      navigator.clipboard.writeText(code).then(() => {
+        showNotification('Pairing code copied!', 'success');
+      });
+    });
 
     // Session name input - Enter key
     els.sessionNameInput.addEventListener('keypress', (e) => {
@@ -503,6 +540,7 @@
         renderSessions();
       });
     });
+    $('#btnExport').addEventListener('click', exportOTP);
 
     // Filter
     els.filterSession.addEventListener('change', renderOTPLogs);
@@ -530,15 +568,15 @@
     els.addSessionModal.addEventListener('click', (e) => {
       if (e.target === els.addSessionModal) els.addSessionModal.classList.remove('show');
     });
-    els.qrModal.addEventListener('click', (e) => {
-      if (e.target === els.qrModal) closeQRModal();
+    els.pairingModal.addEventListener('click', (e) => {
+      if (e.target === els.pairingModal) closePairingModal();
     });
 
     // ESC key to close modals
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         els.addSessionModal.classList.remove('show');
-        closeQRModal();
+        closePairingModal();
       }
     });
 
@@ -572,9 +610,10 @@
 
   // ==================== Global API ====================
   window.app = {
-    showQRModal,
+    showPairingModal,
     logoutSession,
     copyOTP,
+    copyPairingCode,
   };
 
   // Start

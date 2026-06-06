@@ -7,11 +7,15 @@
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
-  "keywords": ["whatsapp", "otp", "baileys"],
+  "keywords": [
+    "whatsapp",
+    "otp",
+    "baileys"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@whiskeysockets/baileys": "^6.7.16",
+    "@whiskeysockets/baileys": "^6.7.23",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

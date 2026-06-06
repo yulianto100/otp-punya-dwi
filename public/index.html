@@ -51,6 +51,9 @@
           <select id="filterSession" class="select-filter">
             <option value="">Semua session</option>
           </select>
+          <button class="btn btn-ghost" id="btnExport" title="Export ke CSV">
+            📥 Export
+          </button>
           <button class="btn btn-ghost" id="btnClearLogs" title="Hapus semua log">
             🗑️ Clear
           </button>
@@ -116,23 +119,32 @@
     </div>
   </div>
 
-  <!-- QR Code Modal -->
-  <div class="modal-overlay" id="qrModal">
-    <div class="modal modal-qr">
+  <!-- Pairing Code Modal -->
+  <div class="modal-overlay" id="pairingModal">
+    <div class="modal modal-pairing">
       <div class="modal-header">
-        <h3>Scan QR Code</h3>
-        <button class="btn-close" id="btnCloseQr">&times;</button>
+        <h3>Pairing Code WhatsApp</h3>
+        <button class="btn-close" id="btnClosePairing">&times;</button>
       </div>
-      <div class="modal-body qr-body">
-        <p class="qr-instructions">Buka WhatsApp di HP → Settings → Linked Devices → Link a Device</p>
-        <div class="qr-container">
-          <img id="qrImage" src="" alt="QR Code">
-          <div class="qr-loading" id="qrLoading">
-            <div class="spinner"></div>
-            <p>Menunggu QR code...</p>
-          </div>
+      <div class="modal-body pairing-body">
+        <div class="pairing-instructions">
+          <p><strong>Cara Link WhatsApp:</strong></p>
+          <ol>
+            <li>Buka WhatsApp di HP/Emulator</li>
+            <li>Masuk ke <strong>Settings → Linked Devices</strong></li>
+            <li>Klik <strong>"Link a Device"</strong></li>
+            <li>Pilih <strong>"Link with Phone Number"</strong></li>
+            <li>Masukkan pairing code di bawah ini</li>
+          </ol>
         </div>
-        <p class="qr-session-name" id="qrSessionName"></p>
+
+        <div class="pairing-code-container">
+          <div class="pairing-code-large" id="pairingCode">----</div>
+          <button class="btn btn-primary" id="btnCopyPairingCode">📋 Copy Code</button>
+        </div>
+
+        <p class="pairing-session-name" id="pairingSessionName"></p>
+        <p class="pairing-note">Code akan kedaluwarsa dalam beberapa menit. Jika gagal, buat session baru.</p>
       </div>
     </div>
   </div>

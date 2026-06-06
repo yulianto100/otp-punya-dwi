@@ -265,6 +265,12 @@ body {
   color: var(--danger);
 }
 
+.session-status.pairing_code {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+
 .session-status-dot {
   width: 6px;
   height: 6px;
@@ -288,6 +294,24 @@ body {
   color: var(--text-muted);
   font-family: 'SF Mono', 'Consolas', monospace;
 }
+
+.pairing-code-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--info-soft);
+  border-radius: var(--radius-sm);
+}
+
+.pairing-code-text {
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  color: var(--info);
+  letter-spacing: 0.1em;
+}
+
 
 .session-actions {
   display: flex;
@@ -543,6 +567,69 @@ body {
 .modal-qr {
   max-width: 360px;
 }
+
+.modal-pairing {
+  max-width: 400px;
+}
+
+.pairing-body {
+  text-align: center;
+}
+
+.pairing-instructions {
+  text-align: left;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+}
+
+.pairing-instructions p {
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.pairing-instructions ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+}
+
+.pairing-instructions li {
+  margin-bottom: 0.375rem;
+}
+
+.pairing-code-container {
+  margin-bottom: 1rem;
+}
+
+.pairing-code-large {
+  font-size: 2.5rem;
+  font-weight: 800;
+  font-family: 'SF Mono', 'Consolas', 'Courier New', monospace;
+  color: var(--text-primary);
+  letter-spacing: 0.2em;
+  padding: 1rem;
+  background: var(--bg-primary);
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+
+.pairing-session-name {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+}
+
+.pairing-note {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
 
 .modal-header {
   padding: 1rem 1.25rem;

@@ -186,17 +186,26 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-// QR Code as image (for embedding)
-app.get('/api/sessions/:name/qr', (req, res) => {
-  const sessions = waClient.getActiveSessions();
-  const session = sessions.find(s => s.name === req.params.name);
+// Export OTP Logs
+app.get('/api/otp-logs/export', (req, res) => {
+  const logs = db.getOtpLogs.all(1000);
 
-  if (!session || !session.qr) {
-    return res.status(404).json({ error: 'QR tidak tersedia' });
-  }
+  // Generate CSV
+  const csv = [
+    ['Session', 'Sender', 'OTP', 'App', 'Message', 'Time'].join(','),
+    ...logs.map(log => [
+      log.session_name,
+      `"${log.sender}"`,
+      log.otp_code,
+      log.app_name,
+      `"${log.message.replace(/"/g, '""')}"`,
+      log.created_at,
+    ].join(','))
+  ].join('\n');
 
-  // Return the data URL
-  res.json({ qr: session.qr });
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename=otp-logs.csv');
+  res.send(csv);
 });
 
 // ==================== HTML Routes ====================
@@ -211,7 +220,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Catch all - serve index (Express 5 requires named parameter)
+// Catch all - serve index
 app.use((req, res, next) => {
   if (req.method === 'GET' && !req.path.startsWith('/api/')) {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -226,7 +235,7 @@ async function startServer() {
   // Initialize database first
   await db.initDB();
   db.setupQueries();
-
+ 
   server.listen(PORT, () => {
     console.log('');
     console.log('  ╔══════════════════════════════════════╗');
@@ -236,21 +245,17 @@ async function startServer() {
     console.log('  ║  Login:     admin / admin123         ║');
     console.log('  ╚══════════════════════════════════════╝');
     console.log('');
-
+    
     // Restore previous sessions
     waClient.restoreSessions();
   });
 }
 
-startServer().catch(err => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
+startServer().catch(console.error);
 
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('\n[Server] Shutting down...');
-  db.saveDB();
   server.close();
   process.exit(0);
 });
