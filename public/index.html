@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WA OTP Manager - Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-icon">📱</div>
+      <div>
+        <h1>WA OTP Manager</h1>
+        <span class="subtitle" id="sessionCount">0/5 session aktif</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="user-info" id="userInfo">admin</span>
+      <button class="btn btn-ghost" id="btnLogout">Logout</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+    <!-- Sessions Panel -->
+    <section class="panel">
+      <div class="panel-header">
+        <h2>📋 Session WhatsApp</h2>
+        <button class="btn btn-primary" id="btnAddSession" title="Tambah session baru">
+          + Tambah Session
+        </button>
+      </div>
+
+      <div class="sessions-grid" id="sessionsGrid">
+        <!-- Sessions will be rendered here -->
+        <div class="empty-state" id="emptySessions">
+          <div class="empty-icon">🔗</div>
+          <p>Belum ada session aktif</p>
+          <p class="text-muted">Klik "Tambah Session" untuk memulai</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- OTP Logs Panel -->
+    <section class="panel">
+      <div class="panel-header">
+        <h2>🔑 OTP Terdeteksi</h2>
+        <div class="panel-actions">
+          <select id="filterSession" class="select-filter">
+            <option value="">Semua session</option>
+          </select>
+          <button class="btn btn-ghost" id="btnClearLogs" title="Hapus semua log">
+            🗑️ Clear
+          </button>
+          <button class="btn btn-ghost" id="btnRefresh" title="Refresh">
+            🔄
+          </button>
+        </div>
+      </div>
+
+      <div class="otp-container">
+        <div class="empty-state" id="emptyOtp">
+          <div class="empty-icon">🔍</div>
+          <p>Belum ada OTP terdeteksi</p>
+          <p class="text-muted">OTP akan muncul otomatis saat pesan masuk</p>
+        </div>
+
+        <div class="otp-list" id="otpList">
+          <!-- OTP cards will be rendered here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Messages Feed -->
+    <section class="panel">
+      <div class="panel-header">
+        <h2>💬 Pesan Masuk</h2>
+        <div class="panel-actions">
+          <label class="toggle-label">
+            <input type="checkbox" id="toggleAutoScroll" checked>
+            <span>Auto-scroll</span>
+          </label>
+          <button class="btn btn-ghost" id="btnClearMessages">🗑️</button>
+        </div>
+      </div>
+
+      <div class="messages-feed" id="messagesFeed">
+        <div class="empty-state" id="emptyMessages">
+          <div class="empty-icon">💬</div>
+          <p>Menunggu pesan masuk...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add Session Modal -->
+  <div class="modal-overlay" id="addSessionModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Tambah Session WhatsApp</h3>
+        <button class="btn-close" id="btnCloseModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="sessionName">Nama Session</label>
+          <input type="text" id="sessionName" placeholder="contoh: nomor-1, kopken-01" maxlength="30">
+          <p class="form-hint">Huruf, angka, dash (-) dan underscore (_) saja</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="btnCancelSession">Batal</button>
+        <button class="btn btn-primary" id="btnCreateSession">Buat Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code Modal -->
+  <div class="modal-overlay" id="qrModal">
+    <div class="modal modal-qr">
+      <div class="modal-header">
+        <h3>Scan QR Code</h3>
+        <button class="btn-close" id="btnCloseQr">&times;</button>
+      </div>
+      <div class="modal-body qr-body">
+        <p class="qr-instructions">Buka WhatsApp di HP → Settings → Linked Devices → Link a Device</p>
+        <div class="qr-container">
+          <img id="qrImage" src="" alt="QR Code">
+          <div class="qr-loading" id="qrLoading">
+            <div class="spinner"></div>
+            <p>Menunggu QR code...</p>
+          </div>
+        </div>
+        <p class="qr-session-name" id="qrSessionName"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
